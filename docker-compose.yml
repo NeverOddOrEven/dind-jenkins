@@ -1,0 +1,32 @@
+version: '3'
+services:
+  docker:
+    build: .
+    image: "neveroddoreven/dind-docker:local"
+    tty: true
+    container_name: "dind-docker"
+    privileged: true
+    networks: 
+      dind-jenkins-network:
+        ipv4_address: 172.16.238.10
+    ports:
+      - "2400:2375"
+    volumes:
+      - ./scratch-dir:/host/jenkins
+  jenkins:
+    image: "jenkins/jenkins:lts-alpine"
+    container_name: "dind-jenkins"
+    privileged: true
+    networks: 
+      dind-jenkins-network:
+        ipv4_address: 172.16.238.11
+    ports:
+     - "8080:8080"
+     - "50000:50000"
+    volumes: 
+      - "${DOCKER_JENKINS_HOME:-~/jenkins}:/var/jenkins_home" # https://github.com/jenkinsci/docker/blob/master/README.md
+networks:
+  dind-jenkins-network:
+    ipam:
+      config:
+        - subnet: 172.16.238.0/24
